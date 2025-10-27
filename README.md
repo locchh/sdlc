@@ -9,3 +9,7 @@
 [Claude Platform](https://docs.claude.com/en/docs/intro)
 
 [Claude Code](https://docs.claude.com/en/docs/claude-code/overview)
+
+[Cursor](https://cursor.com/docs)
+
+[Copilot](https://docs.github.com/en/copilot)
