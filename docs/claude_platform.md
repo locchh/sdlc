@@ -2798,51 +2798,330 @@ curl --request POST https://api.anthropic.com/v1/messages/batches/msgbatch_01Hkc
 
 #### [Delete a Message Batch](https://docs.claude.com/en/api/deleting-message-batches)
 
+Message Batches can only be deleted once they’ve finished processing. If you’d like to delete an in-progress batch, you must first cancel it.
+
 ```bash
+curl -X DELETE https://api.anthropic.com/v1/messages/batches/msgbatch_01HkcTjaV5uDC8jWR4ZsDV8d \
+     --header "x-api-key: $ANTHROPIC_API_KEY" \
+     --header "anthropic-version: 2023-06-01"
 ```
 
 ### Files
 
-#### []()
+#### [Create a File](https://docs.claude.com/en/api/files-create)
+
+The Files API allows you to upload and manage files to use with the Claude API without having to re-upload content with each request. 
 
 ```bash
+curl -X POST "https://api.anthropic.com/v1/files" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: files-api-2025-04-14" \
+     -F "file=@/path/to/document.pdf"
 ```
 
-#### []()
+Success response:
+
+```json
+{
+  "created_at": "2023-11-07T05:31:56Z",
+  "downloadable": false,
+  "filename": "<string>",
+  "id": "<string>",
+  "mime_type": "<string>",
+  "size_bytes": 1,
+  "type": "file"
+}
+```
+
+Error response:
+
+```json
+{
+  "error": {
+    "message": "Invalid request",
+    "type": "invalid_request_error"
+  },
+  "request_id": "<string>",
+  "type": "error"
+}
+```
+
+#### [List Files](https://docs.claude.com/en/api/files-list)
+
+List files within a workspace. The Files API allows you to upload and manage files to use with the Claude API without having to re-upload content with each request. 
 
 ```bash
+curl "https://api.anthropic.com/v1/files" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: files-api-2025-04-14"
 ```
 
-#### []()
+#### [Get File Metadata](https://docs.claude.com/en/api/files-metadata)
 
 ```bash
+curl "https://api.anthropic.com/v1/files/file_011CNha8iCJcU1wXNR6q4V8w" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: files-api-2025-04-14"
 ```
 
-### Skills
+#### [Download a File](https://docs.claude.com/en/api/files-content)
 
-### Admin
-
-#### []()
+Download the contents of a Claude generated file
 
 ```bash
+curl "https://api.anthropic.com/v1/files/file_011CNha8iCJcU1wXNR6q4V8w/content" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: files-api-2025-04-14" \
+     --output downloaded_file.pdf
 ```
 
-#### []()
+#### [Delete a File](https://docs.claude.com/en/api/files-delete)
+
+Make a file inaccessible through the API
 
 ```bash
+curl -X DELETE "https://api.anthropic.com/v1/files/file_011CNha8iCJcU1wXNR6q4V8w" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: files-api-2025-04-14"
 ```
 
-#### []()
+### Skill Management
+
+#### [Create Skill](https://docs.claude.com/en/api/skills/create-skill)
 
 ```bash
+curl -X POST "https://api.anthropic.com/v1/skills" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: skills-2025-10-02" \
+     -F "display_title=My Excel Skill" \
+     -F "files[]=@excel-skill/SKILL.md;filename=excel-skill/SKILL.md" \
+     -F "files[]=@excel-skill/process_excel.py;filename=excel-skill/process_excel.py"
 ```
 
-#### []()
+#### [List Skills](https://docs.claude.com/en/api/skills/list-skills)
 
 ```bash
+curl "https://api.anthropic.com/v1/skills" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: skills-2025-10-02"
 ```
 
-#### []()
+#### [Get Skill](https://docs.claude.com/en/api/skills/get-skill)
 
 ```bash
+curl "https://api.anthropic.com/v1/skills/skill_01AbCdEfGhIjKlMnOpQrStUv" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: skills-2025-10-02"
 ```
+
+#### [Delete Skill](https://docs.claude.com/en/api/skills/delete-skill)
+
+```bash
+curl -X DELETE "https://api.anthropic.com/v1/skills/skill_01AbCdEfGhIjKlMnOpQrStUv" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: skills-2025-10-02"
+```
+
+### Skill Version
+
+#### [Create Skill Version](https://docs.claude.com/en/api/skills/create-skill-version)
+
+```bash
+curl -X POST "https://api.anthropic.com/v1/skills/skill_01AbCdEfGhIjKlMnOpQrStUv/versions" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: skills-2025-10-02" \
+     -F "files[]=@excel-skill/SKILL.md;filename=excel-skill/SKILL.md" \
+     -F "files[]=@excel-skill/process_excel.py;filename=excel-skill/process_excel.py"
+```
+
+#### [List Skill Versions](https://docs.claude.com/en/api/skills/list-skill-versions)
+
+```bash
+curl "https://api.anthropic.com/v1/skills/skill_01AbCdEfGhIjKlMnOpQrStUv/versions" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: skills-2025-10-02"
+```
+
+#### [Get Skill Version](https://docs.claude.com/en/api/skills/get-skill-version)
+
+```bash
+curl "https://api.anthropic.com/v1/skills/skill_01AbCdEfGhIjKlMnOpQrStUv/versions/1759178010641129" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: skills-2025-10-02"
+```
+
+#### [Get Skill Version](https://docs.claude.com/en/api/skills/get-skill-version)
+
+```bash
+curl "https://api.anthropic.com/v1/skills/skill_01AbCdEfGhIjKlMnOpQrStUv/versions/1759178010641129" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: skills-2025-10-02"
+```
+
+#### [Delete Skill Version](https://docs.claude.com/en/api/skills/delete-skill-version)
+
+```bash
+curl -X DELETE "https://api.anthropic.com/v1/skills/skill_01AbCdEfGhIjKlMnOpQrStUv/versions/1759178010641129" \
+     -H "x-api-key: $ANTHROPIC_API_KEY" \
+     -H "anthropic-version: 2023-06-01" \
+     -H "anthropic-beta: skills-2025-10-02"
+```
+
+### [Admin API](https://docs.claude.com/en/api/administration-api)
+
+#### Organization Members
+
+```bash
+# List organization members
+curl "https://api.anthropic.com/v1/organizations/users?limit=10" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY"
+
+# Update member role
+curl "https://api.anthropic.com/v1/organizations/users/{user_id}" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY" \
+     --data '{"role": "developer"}'
+
+# Remove member
+curl --request DELETE "https://api.anthropic.com/v1/organizations/users/{user_id}" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY"
+```
+
+#### Organization Invites
+
+```bash
+# Create invite
+curl --request POST "https://api.anthropic.com/v1/organizations/invites" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY" \
+     --data '{"email": "user@example.com", "role": "developer"}'
+
+# List invites
+curl "https://api.anthropic.com/v1/organizations/invites?limit=10" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY"
+
+# Delete invite
+curl --request DELETE "https://api.anthropic.com/v1/organizations/invites/{invite_id}" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY"
+```
+
+#### Workspaces
+
+```bash
+# Create workspace
+curl --request POST "https://api.anthropic.com/v1/organizations/workspaces" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY" \
+     --data '{"name": "Production"}'
+
+# List workspaces
+curl "https://api.anthropic.com/v1/organizations/workspaces?limit=10&include_archived=false" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY"
+
+# Archive workspace
+curl --request POST "https://api.anthropic.com/v1/organizations/workspaces/{workspace_id}/archive" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY"
+```
+
+#### Workspace Members
+
+```bash
+# Add member to workspace
+curl --request POST "https://api.anthropic.com/v1/organizations/workspaces/{workspace_id}/members" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY" \
+     --data '{"user_id": "user_xxx", "workspace_role": "workspace_developer"}'
+
+# List workspace members
+curl "https://api.anthropic.com/v1/organizations/workspaces/{workspace_id}/members?limit=10" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY"
+
+# Update member role
+curl --request POST "https://api.anthropic.com/v1/organizations/workspaces/{workspace_id}/members/{user_id}" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY" \
+     --data '{"workspace_role": "workspace_admin"}'
+
+# Remove member from workspace
+curl --request DELETE "https://api.anthropic.com/v1/organizations/workspaces/{workspace_id}/members/{user_id}" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY"
+```
+
+#### API Keys
+
+```bash
+# List API keys
+curl "https://api.anthropic.com/v1/organizations/api_keys?limit=10&status=active&workspace_id=wrkspc_xxx" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY"
+
+# Update API key
+curl --request POST "https://api.anthropic.com/v1/organizations/api_keys/{api_key_id}" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ANTHROPIC_ADMIN_KEY" \
+     --data '{"status": "inactive", "name": "New Key Name"}'
+```
+
+#### Organization Info
+
+```bash
+curl "https://api.anthropic.com/v1/organizations/me" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "x-api-key: $ADMIN_API_KEY"
+```
+
+## [Agent SDK](https://docs.claude.com/en/api/agent-sdk/overview)
+
+Install `uv pip install claude-agent-sdk` or `uv pip install --native-tls claude-agent-sdk`
+
+### Full Claude Code Feature Support
+
+The SDK provides access to all the default features available in Claude Code, leveraging the same file system-based configuration:
+
+- **Subagents**: Launch specialized agents stored as Markdown files in `./.claude/agents/`
+
+- **Agent Skills**: Extend Claude with specialized capabilities stored as SKILL.md files in `./.claude/skills/`
+
+- **Hooks**: Execute custom commands configured in `./.claude/settings.json` that respond to tool events
+
+- **Slash Commands**: Use custom commands defined as Markdown files in `./.claude/commands/`
+
+- **Plugins**: Load custom plugins programmatically using the plugins option to extend Claude Code with custom commands, agents, skills, hooks, and MCP servers. See Plugins for details.
+
+- **Memory (CLAUDE.md)**: Maintain project context through `CLAUDE.md` or `.claude/CLAUDE.md` files in your project directory, or `~/.claude/CLAUDE.md` for user-level instructions. To load these files, you must explicitly set settingSources: ['project'] (TypeScript) or setting_sources=["project"] (Python) in your options. See Modifying system prompts for details.
+
+These features work identically to their Claude Code counterparts by reading from the same file system locations.
+
+### System Prompts
+System prompts define your agent’s role, expertise, and behavior. This is where you specify what kind of agent you’re building.
+
+### Tool Permissions
+Control which tools your agent can use with fine-grained permissions:
+- `allowedTools` - Explicitly allow specific tools
+- `disallowedTools` - Block specific tools
+- `permissionMode` - Set overall permission strategy
+
+### Model Context Protocol (MCP)
+
+Extend your agents with custom tools and integrations through MCP servers. This allows you to connect to databases, APIs, and other external services.

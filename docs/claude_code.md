@@ -1,6 +1,28 @@
-## [Claude Code](https://claude.com/product/claude-code)
+# [Claude Code](https://claude.com/product/claude-code)
 
-Install `npm install -g @anthropic-ai/claude-code` (Prequesite: Node.js >= 18)
+## Overview
+
+Prerequisites:
+
+- Node.js >= 18
+- A Claude.ai (recommended) or Claude Console account
+
+Installation:
+
+```bash
+# Install Claude Code
+npm install -g @anthropic-ai/claude-code
+
+# Navigate to your project
+cd your-awesome-project
+
+# Start coding with Claude
+claude
+# You'll be prompted to log in on first use
+
+/login
+# Follow the prompts to log in with your account
+```
 
 Features:
 
@@ -11,28 +33,279 @@ Features:
 - Integrated with the editor
 - Powerful agentic features like subagents, custom slash commands, and MCP are supported.
 
-### CLI
+Usages:
+
+- **Build features from descriptions:** Tell Claude what you want to build in plain English. It will make a plan, write the code, and ensure it works.
+- **Debug and fix issues:** Describe a bug or paste an error message. Claude Code will analyze your codebase, identify the problem, and implement a fix.
+- **Navigate any codebase:** Ask anything about your team’s codebase, and get a thoughtful answer back. Claude Code maintains awareness of your entire project structure, can find up-to-date information from the web, and with MCP can pull from external datasources like Google Drive, Figma, and Slack.
+- **Automate tedious tasks:** Fix fiddly lint issues, resolve merge conflicts, and write release notes. Do all this in a single command from your developer machines, or automatically in CI.
+
+Why developers love Claude Code:
+- **Works in your terminal:** Not another chat window. Not another IDE. Claude Code meets you where you already work, with the tools you already love.
+- **Takes action:** Claude Code can directly edit files, run commands, and create commits. Need more? MCP lets Claude read your design docs in Google Drive, update your tickets in Jira, or use your custom developer tooling.
+- **Unix philosophy:** Claude Code is composable and scriptable. tail -f app.log | claude -p "Slack me if you see any anomalies appear in this log stream" works. Your CI can run claude -p "If there are new text strings, translate them into French and raise a PR for @lang-fr-team to review".
+- **Enterprise-ready:** Use the Claude API, or host on AWS or GCP. Enterprise-grade security, privacy, and compliance is built-in.
+
+Inside `.claude/`:
+  - commands/ - Slash commands
+  - agents/ - Custom agents
+  - skills/ - Reusable skills
+  - hooks/ - Hook scripts
+  - settings.json - (permissions and hooks config)
+
+Inside `.claude-plugin/` (for plugins):
+  - plugin.json - Plugin metadata
+
+## Features
+
+### [Subagents](https://docs.claude.com/en/docs/claude-code/sub-agents)
+
+**Purpose:** Suppose you want to use specialized AI subagents to handle specific tasks more effectively.
+
+**How to activate:**
+- Use subagents automatically: `review my recent code changes for security issues`
+- Explicitly request specific subagents: `> use the code-reviewer subagent to check the auth module`
+
+**Key features:**
+- Separate context window from main conversation
+- Custom system prompts for behavior guidance
+- Tool restrictions (can limit which tools they access)
+- Created via `/agents` command
+
+**Use cases:** Code review, debugging, data analysis
+
+**Advanced:** Chaining subagents, dynamic selection
+
+### [Plugins](https://docs.claude.com/en/docs/claude-code/plugins)
+
+**Purpose:** Extend Claude Code with custom commands, agents, hooks, Skills, and MCP servers
+
+**Structure:** Plugin metadata in `plugin.json`, organized directories
+
+**Key steps:** Create → Install → Manage → Share
+
+**Scopes:** Personal, project, team-level
+
+### [Agent skills](https://docs.claude.com/en/docs/claude-code/skills)
+
+**Purpose:** Reusable expertise packages shared across teams via git
+
+**Format:** Defined in `SKILL.md` files
+
+**Benefits:** Reduce repetitive prompting, compose multiple Skills for complex tasks
+
+**Best practices:**
+- Keep Skills focused
+- Write clear descriptions
+- Document versions
+- Test with team
+
+### [Output Styles](https://docs.claude.com/en/docs/claude-code/output-styles)
+
+**Purpose:** Adapt Claude Code for different use cases beyond coding
+
+**Built-in styles:**
+- **Explanatory:** Educational insights while coding
+- **Learning:** Collaborative mode with `TODO(human)` markers
+
+**Customization:** Create custom styles via `/output-style:new`
+
+**Configuration:** Local or project-level in `.claude/settings.local.json`
+
+### [Hooks](https://docs.claude.com/en/docs/claude-code/hooks-guide)
+
+**Purpose:** Customize behavior by running shell commands on specific events
+
+**Hook events:**
+- PreToolUse / PostToolUse
+- UserPromptSubmit
+- SessionStart / SessionEnd
+- SubagentStop
+- PreCompact
+
+**Configuration:** Via `/hooks` command
+
+### [Headless mode](https://docs.claude.com/en/docs/claude-code/headless)
+
+**Purpose:** Run Claude Code programmatically without UI
+
+**Key flags:**
+- `--print` / `-p` for non-interactive mode
+- `--output-format` (text, json, stream-json)
+- `--resume` / `--continue` for multi-turn conversations
+- `--allowedTools` / `--disallowedTools` for permissions
+
+**Use cases:** Automation, CI/CD integration, bots
+
+### [MCP](https://docs.claude.com/en/docs/claude-code/mcp)
+
+**Purpose:** Connect Claude Code to external tools and data sources
+
+**Capabilities:**
+- Query databases (PostgreSQL, etc.)
+- Integrate with issue trackers (JIRA, GitHub)
+- Access monitoring tools (Sentry, Statsig)
+- Connect to design tools (Figma)
+- Automation (Gmail, Slack)
+
+**Installation scopes:** Local, project, user, enterprise
+
+**Configuration:** Via `/mcp` command or `.mcp.json`
+
+## Reference
+
+### [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
 
 Usage: `claude [options] [command] [prompt]`
 
-**Key Options:**
+Key CLI commands:
+- `claude` - Start interactive session
+- `claude "query"` - Single query mode
+- `claude -p "query"` - Print mode (non-interactive, output to stdout)
+- `cat file | claude -p "query"` - Pipe input to Claude
+- `claude -c` - Continue last session
+- `claude -r "<session-id>" "query"` - Resume specific session
+- `claude update` - Check and install updates
+- `claude mcp` - Configure MCP servers
 
-- Debug and verbose modes
-- Print mode for piping and automation (with text, JSON, or stream-json output formats)
-- Permission controls (skip, allow, or restrict permissions)
-- Tool filtering (allow/disallow specific tools)
-- MCP configuration options
-- Session management (continue, resume, fork sessions)
-- Model selection and fallback options
-- Custom system prompts
-- IDE integration
-- Plugin and settings configuration
+Key CLI flags:
+- `--add-dir` - Add working directories
+- `--agents` - Configure subagents
+- `--allowedTools` / `--disallowedTools` - Restrict tool access
+- `--append-system-prompt` - Add custom instructions
+- `--output-format` - text, json, or stream-json
+- `--input-format` - text or stream-json
+- `--verbose` - Enable verbose logging
+- `--max-turns` - Limit conversation turns
+- `--model` - Select Claude model (sonnet, opus)
+- `--permission-mode` - plan, accept, or skip
+- `--dangerously-skip-permissions` - Skip all permission checks
 
-**Commands:**
-- mcp - Configure and manage MCP servers
-- plugin - Manage Claude Code plugins
-- migrate-installer - Migration from npm installation
-- setup-token - Authentication token setup
-- doctor - Health check for auto-updater
-- update - Check and install updates
-- install - Install native builds
+### [Interactive mode](https://docs.claude.com/en/docs/claude-code/interactive-mode)
+
+Keyboard shortcuts:
+General controls:
+- `Ctrl+C` - Cancel current operation
+- `Ctrl+D` - Exit Claude Code
+- `Ctrl+L` - Clear screen
+- `Ctrl+O` - Open file in editor
+- `Ctrl+R` - Search command history
+- `Ctrl+V` - Paste from clipboard
+- `Alt+V` - Paste with formatting
+- `Up/Down arrows` - Navigate history
+- `Esc` - Cancel/go back
+- `Tab` - Enable extended thinking
+- `Shift+Tab` - Disable extended thinking
+- `Alt+M` - Toggle multiline mode
+
+Multiline input:
+- `\` - Continue line
+- `Option+Enter` - New line (Mac)
+- `Shift+Enter` - New line (with /terminal-setup)
+- `Ctrl+J` - New line (alternative)
+
+Quick commands:
+- `#` - Comment
+- `/` - Slash command
+- `!` - Bash command
+- `@` - Reference file/directory
+
+### [Slash Commands](https://docs.claude.com/en/docs/claude-code/slash-commands)
+
+Built-in slash commands:
+- `/add-dir` - Add working directories
+- `/agents` - Manage subagents
+- `/bug` - Report bugs
+- `/clear` - Clear conversation
+- `/compact [instructions]` - Compact with summary
+- `/config` - Open config panel
+- `/cost` - Show session cost
+- `/doctor` - Diagnose installation
+- `/help` - Show help
+- `/init` - Initialize CLAUDE.md
+- `/login` / `/logout` - Authentication
+- `/mcp` - Manage MCP servers
+- `/memory` - Edit memory files
+- `/model` - Change AI model
+- `/permissions` - Manage permissions
+- `/pr_comments` - Get PR comments
+- `/review` - Review PR
+- `/sandbox` - Configure sandbox
+- `/rewind` - Restore to checkpoint
+- `/status` - Show status
+- `/terminal-setup` - Setup Shift+Enter
+- `/usage` - Show plan usage
+- `/vim` - Toggle Vim mode
+
+Custom slash commands:
+- Defined in `.claude/commands/`
+- Can be plugin-provided
+- Can invoke MCP prompts
+
+### [Checkpointing](https://docs.claude.com/en/docs/claude-code/checkpointing)
+
+How checkpoints work:
+Automatic tracking:
+- Every user prompt creates a checkpoint
+- Checkpoints persist across sessions (30-day retention)
+- Automatically cleaned up after 30 days
+
+Rewinding changes:
+- `Esc` - Show rewind menu
+- `/rewind` - Access rewind interface
+- Three rewind options:
+  1. Conversation only - Keep code changes, revert conversation
+  2. Code only - Revert file changes, keep conversation
+  3. Both - Restore both to prior point
+
+Limitations:
+- Bash command changes not tracked
+- External changes not tracked
+- Not a replacement for version control
+
+### [Hooks reference](https://docs.claude.com/en/docs/claude-code/hooks)
+
+Hook events:
+- `PreToolUse` - Before tool calls (can block)
+- `PostToolUse` - After tool calls complete
+- `UserPromptSubmit` - Before Claude processes prompt
+- `Notification` - When notifications sent
+- `Stop` - When Claude finishes responding
+- `SubagentStop` - When subagent tasks complete
+- `PreCompact` - Before compact operation
+- `SessionStart` - Session starts/resumes
+- `SessionEnd` - Session ends
+
+Configuration:
+- Stored in `.claude/hooks/` directory
+- Configured via `/hooks` command
+- Can be project-specific or plugin-provided
+- Input/output via JSON or exit codes
+
+### [Plugin reference](https://docs.claude.com/en/docs/claude-code/plugins-reference)
+
+Plugin components:
+- Commands - Custom slash commands
+- Agents - Subagents
+- Skills - Reusable expertise
+- Hooks - Event handlers
+- MCP servers - Tool integrations
+
+Plugin structure:
+- `plugin.json` - Plugin metadata (required fields, component paths)
+- `commands/` - Slash command definitions
+- `agents/` - Subagent configurations
+- `skills/` - Skill definitions
+- `hooks/` - Hook scripts
+- `mcp/` - MCP server configs
+
+Debugging:
+- Use `/doctor` to diagnose issues
+- Check plugin.json schema
+- Verify file paths and syntax
+- Test locally before sharing
+
+Distribution:
+- Version management via plugin.json
+- Can be shared via marketplaces
+- Team-level or user-level installation
