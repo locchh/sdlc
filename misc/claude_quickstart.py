@@ -8,8 +8,8 @@ message = client.messages.create(
     messages=[
         {
             "role": "user",
-            "content": "What should I search for to find the latest developments in renewable energy?"
+            "content": "What should I search for to find the latest developments in renewable energy?",
         }
-    ]
+    ],
 )
 print(message.content)
