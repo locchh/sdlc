@@ -56,6 +56,64 @@ Inside `.claude/`:
 Inside `.claude-plugin/` (for plugins):
   - plugin.json - Plugin metadata
 
+**Use Claude in interactive mode**
+
+```bash
+claude
+```
+
+**Use Claude as a unix-style utility (Headless mode)**
+
+- Add Claude to your Makefile
+```makefile
+.PHONY: hello
+
+hello:
+	claude -p "Hello!"
+```
+
+- Pipe in, pipe out
+
+```bash
+cat build-error.txt | claude -p 'concisely explain the root cause of this build error' > output.txt
+
+
+# This outputs a JSON array of messages with metadata including cost and duration.
+cat code.py | claude -p 'analyze this code for bugs' --output-format json > analysis.json
+
+# Use streaming JSON format
+cat log.txt | claude -p 'parse this log file for errors' --output-format stream-json
+```
+
+**Create custom slash commands**
+
+```bash
+# Create a commands directory in your project
+mkdir -p .claude/commands
+
+# Create a Markdown file for each command
+echo "Analyze the performance of this code and suggest three specific optimizations:" > .claude/commands/optimize.md
+
+claude
+
+# Use your custom command in Claude Code
+optimize
+```
+
+Add command arguments with `$ARGUMENTS`:
+
+```bash
+echo 'Find and fix issue #$ARGUMENTS. Follow these steps: 1.
+Understand the issue described in the ticket 2. Locate the relevant code in
+our codebase 3. Implement a solution that addresses the root cause 4. Add
+appropriate tests 5. Prepare a concise PR description' >
+.claude/commands/fix-issue.md
+
+claude
+
+fix-issue 123
+```
+
 ## Features
 
 ### [Subagents](https://docs.claude.com/en/docs/claude-code/sub-agents)
