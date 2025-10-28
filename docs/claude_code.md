@@ -235,12 +235,83 @@ the subagent should follow.
 
 ### [Agent skills](https://docs.claude.com/en/docs/claude-code/skills)
 
+Skills are modular capabilities that extend Claude’s functionality through organized folders containing instructions, scripts, and resources. Each Skill consists of a `SKILL.md` file with instructions that Claude reads when relevant, plus optional supporting files like scripts and templates. Skills are **model-invoked**—Claude autonomously decides when to use them based on your request and the Skill’s description. This is different from slash commands, which are **user-invoked** (you explicitly type `/`command to trigger them).
 
-### [Output Styles](https://docs.claude.com/en/docs/claude-code/output-styles)
+**Benefits:**
+- Extend Claude’s capabilities for your specific workflows
+- Share expertise across your team via git
+- Reduce repetitive prompting
+- Compose multiple Skills for complex tasks
 
+Personal Skills are available across all your projects. Store them in `~/.claude/skills/`: `mkdir -p ~/.claude/skills/my-skill-name`. Use personal Skills for: Your individual workflows and preferences, Experimental Skills you’re developing, Personal productivity tools.
+
+Project Skills are shared with your team. Store them in `.claude/skills/` within your project: `mkdir -p .claude/skills/my-skill-name`. Use project Skills for: Team workflows and conventions, Project-specific expertise, Shared utilities and scripts.
+
+Create a `SKILL.md` file with YAML frontmatter and Markdown content:
+
+```markdown
+---
+name: your-skill-name
+description: Brief description of what this Skill does and when to use it
+---
+
+# Your Skill Name
+
+## Instructions
+Provide clear, step-by-step guidance for Claude.
+
+## Examples
+Show concrete examples of using this Skill.
+```
+
+Add supporting files:
+
+```
+my-skill/
+├── SKILL.md (required)
+├── reference.md (optional documentation)
+├── examples.md (optional examples)
+├── scripts/
+│   └── helper.py (optional utility)
+└── templates/
+    └── template.txt (optional template)
+```
+
+Reference these files from SKILL.md:
+
+```markdown
+For advanced usage, see [reference.md](reference.md).
+
+Run the helper script:`python scripts/helper.py input.txt`
+```
+
+Use the allowed-tools frontmatter field to limit which tools Claude can use when a Skill is active:
+
+
+```markdown
+---
+name: safe-file-reader
+description: Read files without making changes. Use when you need read-only file access.
+allowed-tools: Read, Grep, Glob
+---
+
+# Safe File Reader
+
+This Skill provides read-only file access.
+
+## Instructions
+1. Use Read to view file contents
+2. Use Grep to search within files
+3. Use Glob to find files by pattern
+```
+
+For more details, see [quickstart](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/quickstart), [best practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices)
 
 ### [Hooks](https://docs.claude.com/en/docs/claude-code/hooks-guide)
 
+### [MCP](https://docs.claude.com/en/docs/claude-code/mcp)
+
+### [Output Styles](https://docs.claude.com/en/docs/claude-code/output-styles)
 
 ### [Plugins](https://docs.claude.com/en/docs/claude-code/plugins)
 
