@@ -209,7 +209,7 @@ the subagent should follow.
 |tools	|No	|Comma-separated list of specific tools. If omitted, inherits all tools from the main thread|
 |model	|No	|Model to use for this subagent. Can be a model alias (sonnet, opus, haiku) or 'inherit' to use the main conversation’s model. If omitted, defaults to the configured subagent model|
 
-Tools available to Claude:
+**Tools available to Claude:**
 
 | Tool | Description | Permission Required |
 |------|-------------|---------------------|
@@ -227,81 +227,36 @@ Tools available to Claude:
 | WebSearch | Performs web searches with domain filtering | Yes |
 | Write | Creates or overwrites files | Yes |
 
+**Usage:**
+- Automatic delegation: `review my recent code changes for security issues`
+- Explicit delegation: `> use the code-reviewer subagent to check the auth module`
+- Chaining subagents: `> First use the code-analyzer subagent to find performance issues, then use the optimizer subagent to fix them`
+- Dynamic subagent selection
+
 ### [Plugins](https://docs.claude.com/en/docs/claude-code/plugins)
 
-**Purpose:** Extend Claude Code with custom commands, agents, hooks, Skills, and MCP servers
 
-**Structure:** Plugin metadata in `plugin.json`, organized directories
 
-**Key steps:** Create → Install → Manage → Share
 
-**Scopes:** Personal, project, team-level
 
 ### [Agent skills](https://docs.claude.com/en/docs/claude-code/skills)
 
-**Purpose:** Reusable expertise packages shared across teams via git
 
-**Format:** Defined in `SKILL.md` files
 
-**Benefits:** Reduce repetitive prompting, compose multiple Skills for complex tasks
 
-**Best practices:**
-- Keep Skills focused
-- Write clear descriptions
-- Document versions
-- Test with team
 
 ### [Output Styles](https://docs.claude.com/en/docs/claude-code/output-styles)
 
-**Purpose:** Adapt Claude Code for different use cases beyond coding
-
-**Built-in styles:**
-- **Explanatory:** Educational insights while coding
-- **Learning:** Collaborative mode with `TODO(human)` markers
-
-**Customization:** Create custom styles via `/output-style:new`
-
-**Configuration:** Local or project-level in `.claude/settings.local.json`
 
 ### [Hooks](https://docs.claude.com/en/docs/claude-code/hooks-guide)
 
-**Purpose:** Customize behavior by running shell commands on specific events
 
-**Hook events:**
-- PreToolUse / PostToolUse
-- UserPromptSubmit
-- SessionStart / SessionEnd
-- SubagentStop
-- PreCompact
-
-**Configuration:** Via `/hooks` command
 
 ### [Headless mode](https://docs.claude.com/en/docs/claude-code/headless)
 
-**Purpose:** Run Claude Code programmatically without UI
-
-**Key flags:**
-- `--print` / `-p` for non-interactive mode
-- `--output-format` (text, json, stream-json)
-- `--resume` / `--continue` for multi-turn conversations
-- `--allowedTools` / `--disallowedTools` for permissions
-
-**Use cases:** Automation, CI/CD integration, bots
 
 ### [MCP](https://docs.claude.com/en/docs/claude-code/mcp)
 
-**Purpose:** Connect Claude Code to external tools and data sources
-
-**Capabilities:**
-- Query databases (PostgreSQL, etc.)
-- Integrate with issue trackers (JIRA, GitHub)
-- Access monitoring tools (Sentry, Statsig)
-- Connect to design tools (Figma)
-- Automation (Gmail, Slack)
-
-**Installation scopes:** Local, project, user, enterprise
-
-**Configuration:** Via `/mcp` command or `.mcp.json`
 
 ## Reference
 
@@ -346,7 +301,7 @@ General controls:
 - `Up/Down arrows` - Navigate history
 - `Esc` - Cancel/go back
 - `Tab` - Enable extended thinking
-- `Shift+Tab` - Disable extended thinking
+- `Shift+Tab` - Switch between `auto-accept edits`, `plan mode` and normal mode
 - `Alt+M` - Toggle multiline mode
 
 Multiline input:
