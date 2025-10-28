@@ -233,16 +233,7 @@ the subagent should follow.
 - Chaining subagents: `> First use the code-analyzer subagent to find performance issues, then use the optimizer subagent to fix them`
 - Dynamic subagent selection
 
-### [Plugins](https://docs.claude.com/en/docs/claude-code/plugins)
-
-
-
-
-
 ### [Agent skills](https://docs.claude.com/en/docs/claude-code/skills)
-
-
-
 
 
 ### [Output Styles](https://docs.claude.com/en/docs/claude-code/output-styles)
@@ -251,11 +242,103 @@ the subagent should follow.
 ### [Hooks](https://docs.claude.com/en/docs/claude-code/hooks-guide)
 
 
+### [Plugins](https://docs.claude.com/en/docs/claude-code/plugins)
+
+Plugins let you extend Claude Code with custom functionality that can be shared across projects and teams. Install plugins from [marketplaces](https://docs.claude.com/en/docs/claude-code/plugin-marketplaces) to add pre-built commands, agents, hooks, Skills, and MCP servers, or create your own to automate your workflows.
+
+Create your first plugin:
+
+```bash
+# Create the marketplace structure
+mkdir test-marketplace
+cd test-marketplace
+
+# Create the plugin directory
+mkdir my-first-plugin
+cd my-first-plugin
+
+# Create the plugin manifest
+mkdir .claude-plugin
+cat > .claude-plugin/plugin.json << 'EOF'
+{
+"name": "my-first-plugin",
+"description": "A simple greeting plugin to learn the basics",
+"version": "1.0.0",
+"author": {
+"name": "locch"
+}
+}
+EOF
+
+# Add a custom command
+mkdir commands
+cat > commands/hello.md << 'EOF'
+---
+description: Greet the user with a personalized message
+---
+
+# Hello Command
+
+Greet the user warmly and ask how you can help them today. Make the greeting personal and encouraging.
+EOF
+
+# Create the marketplace manifest
+cd ..
+mkdir .claude-plugin
+cat > .claude-plugin/marketplace.json << 'EOF'
+{
+"name": "test-marketplace",
+"owner": {
+"name": "Test User"
+},
+"plugins": [
+{
+  "name": "my-first-plugin",
+  "source": "./my-first-plugin",
+  "description": "My first test plugin"
+}
+]
+}
+EOF
+
+# Start Claude Code from parent directory
+cd ..
+claude
+
+# Add the test marketplace
+/plugin marketplace add ./test-marketplace
+
+# Try your new command
+/hello
+```
+
+Your plugin follows this basic structure:
+
+```
+my-first-plugin/
+├── .claude-plugin/
+│   └── plugin.json          # Plugin metadata
+├── commands/                 # Custom slash commands (optional)
+│   └── hello.md
+├── agents/                   # Custom agents (optional)
+│   └── helper.md
+├── skills/                   # Agent Skills (optional)
+│   └── my-skill/
+│       └── SKILL.md
+└── hooks/                    # Event handlers (optional)
+    └── hooks.json
+```
+
+Additional components you can add:
+
+- **Commands:** Create markdown files in commands/ directory
+- **Agents:** Create agent definitions in agents/ directory
+- **Skills:** Create SKILL.md files in skills/ directory
+- **Hooks:** Create hooks/hooks.json for event handling
+- **MCP servers:** Create .mcp.json for external tool integration
+
 
 ### [Headless mode](https://docs.claude.com/en/docs/claude-code/headless)
-
-
-### [MCP](https://docs.claude.com/en/docs/claude-code/mcp)
 
 
 ## Reference
