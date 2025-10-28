@@ -24,6 +24,38 @@ claude
 # Follow the prompts to log in with your account
 ```
 
+Claude Code offers a variety of settings to configure its behavior to meet your needs. You can configure Claude Code by running the `/config` command when using the interactive REPL, which opens a tabbed Settings interface where you can view status information and modify configuration options. 
+
+The settings.json file is our official mechanism for configuring Claude Code through hierarchical settings:
+- User settings are defined in `~/.claude/settings.json` and apply to all projects.
+- Project settings are defined in `.claude/settings.json` for settings that are checked into source control and shared with your team.
+
+Example:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run test:*)",
+      "Read(~/.zshrc)"
+    ],
+    "deny": [
+      "Bash(curl:*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)"
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp"
+  }
+}
+```
+
+More details: [Settings](https://docs.claude.com/en/docs/claude-code/settings#tools-available-to-claude)
+
 Features:
 
 - Autonomously explores your codebase
@@ -118,21 +150,82 @@ fix-issue 123
 
 ### [Subagents](https://docs.claude.com/en/docs/claude-code/sub-agents)
 
-**Purpose:** Suppose you want to use specialized AI subagents to handle specific tasks more effectively.
+Subagents are pre-configured AI personalities that Claude Code can delegate tasks to. Subagents are stored as Markdown files with YAML frontmatter in two possible locations:
+
+- Project subagents	`.claude/agents/`	Available in current project	with Highest priority
+- User subagents	`~/.claude/agents/`	Available across all projects	Lower priority
+
+You can also manage subagents by working directly with their files:
+
+```bash
+# Create a project subagent
+mkdir -p .claude/agents
+echo '---
+name: test-runner
+description: Use proactively to run tests and fix failures
+---
+
+You are a test automation expert. When you see code changes, proactively run the appropriate tests. If tests fail, analyze the failures and fix them while preserving the original test intent.' > .claude/agents/test-runner.md
+
+# Create a user subagent
+mkdir -p ~/.claude/agents
+# ... create subagent file
+```
 
 **How to activate:**
 - Use subagents automatically: `review my recent code changes for security issues`
 - Explicitly request specific subagents: `> use the code-reviewer subagent to check the auth module`
 
-**Key features:**
-- Separate context window from main conversation
-- Custom system prompts for behavior guidance
-- Tool restrictions (can limit which tools they access)
-- Created via `/agents` command
+**Key benefits:**
+- Context preservation: Each subagent operates in its own context, preventing pollution of the main conversation and keeping it focused on high-level objectives.
+- Specialized expertise: Subagents can be fine-tuned with detailed instructions for specific domains, leading to higher success rates on designated tasks.
+- Reusability: Once created, subagents can be used across different projects and shared with your team for consistent workflows.
+- Flexible permissions: Each subagent can have different tool access levels, allowing you to limit powerful tools to specific subagent types.
 
-**Use cases:** Code review, debugging, data analysis
+**File format**
 
-**Advanced:** Chaining subagents, dynamic selection
+Each subagent is defined in a Markdown file with this structure:
+
+```yaml
+---
+name: your-sub-agent-name
+description: Description of when this subagent should be invoked
+tools: tool1, tool2, tool3  # Optional - inherits all tools if omitted
+model: sonnet  # Optional - specify model alias or 'inherit'
+---
+
+Your subagent's system prompt goes here. This can be multiple paragraphs
+and should clearly define the subagent's role, capabilities, and approach
+to solving problems.
+
+Include specific instructions, best practices, and any constraints
+the subagent should follow.
+```
+
+|Field	|Required	|Description|
+|---	|---	|---|
+|name	|Yes	|Unique identifier using lowercase letters and hyphens|
+|description	|Yes	|Natural language description of the subagent’s purpose|
+|tools	|No	|Comma-separated list of specific tools. If omitted, inherits all tools from the main thread|
+|model	|No	|Model to use for this subagent. Can be a model alias (sonnet, opus, haiku) or 'inherit' to use the main conversation’s model. If omitted, defaults to the configured subagent model|
+
+Tools available to Claude:
+
+| Tool | Description | Permission Required |
+|------|-------------|---------------------|
+| Bash | Executes shell commands in your environment | Yes |
+| Edit | Makes targeted edits to specific files | Yes |
+| Glob | Finds files based on pattern matching | No |
+| Grep | Searches for patterns in file contents | No |
+| NotebookEdit | Modifies Jupyter notebook cells | Yes |
+| NotebookRead | Reads and displays Jupyter notebook contents | No |
+| Read | Reads the contents of files | No |
+| SlashCommand | Runs a custom slash command | Yes |
+| Task | Runs a sub-agent to handle complex, multi-step tasks | No |
+| TodoWrite | Creates and manages structured task lists | No |
+| WebFetch | Fetches content from a specified URL | Yes |
+| WebSearch | Performs web searches with domain filtering | Yes |
+| Write | Creates or overwrites files | Yes |
 
 ### [Plugins](https://docs.claude.com/en/docs/claude-code/plugins)
 
