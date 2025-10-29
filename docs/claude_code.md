@@ -148,6 +148,97 @@ fix-issue 123
 
 ## Features
 
+### [Headless mode](https://docs.claude.com/en/docs/claude-code/headless)
+
+The headless mode allows you to run Claude Code programmatically from command line scripts and automation tools without any interactive UI. The primary command-line interface to Claude Code is the `claude` command. Use the `--print` (or `-p`) flag to run in non-interactive mode and print the final result:
+
+```bash
+claude -p "Stage my changes and write a set of commits for them" \
+  --allowedTools "Bash,Read" \
+  --permission-mode acceptEdits
+```
+
+For multi-turn conversations, you can resume conversations or continue from the most recent session:
+
+```bash
+# Continue the most recent conversation
+claude --continue "Now refactor this for better performance"
+
+# Resume a specific conversation by session ID
+claude --resume 550e8400-e29b-41d4-a716-446655440000 "Update the tests"
+
+# Resume in non-interactive mode
+claude --resume 550e8400-e29b-41d4-a716-446655440000 "Fix all linting issues" --no-interactive
+```
+
+Headless mode leverages all the CLI options available in Claude Code. Here are the key ones for automation and scripting:
+
+| Flag | Description | Example |
+|------|-------------|---------|
+| `--print`, `-p` | Run in non-interactive mode | `claude -p "query"` |
+| `--output-format` | Specify output format (text, json, stream-json) | `claude -p --output-format json` |
+| `--resume`, `-r` | Resume a conversation by session ID | `claude --resume abc123` |
+| `--continue`, `-c` | Continue the most recent conversation | `claude --continue` |
+| `--verbose` | Enable verbose logging | `claude --verbose` |
+| `--append-system-prompt` | Append to system prompt (only with --print) | `claude --append-system-prompt "Custom instruction"` |
+| `--allowedTools` | Space-separated list of allowed tools, or string of comma-separated list of allowed tools | `claude --allowedTools mcp__slack mcp__filesystem`<br>`claude --allowedTools "Bash(npm install),mcp__filesystem"` |
+| `--disallowedTools` | Space-separated list of denied tools, or string of comma-separated list of denied tools | `claude --disallowedTools mcp__splunk mcp__github`<br>`claude --disallowedTools "Bash(git commit),mcp__github"` |
+| `--mcp-config` | Load MCP servers from a JSON file | `claude --mcp-config servers.json` |
+| `--permission-prompt-tool` | MCP tool for handling permission prompts (only with --print) | `claude --permission-prompt-tool mcp__auth__prompt` |
+
+### [Output Styles](https://docs.claude.com/en/docs/claude-code/output-styles)
+
+Output styles allow you to use Claude Code as any type of agent while keeping its core capabilities, such as running local scripts, reading/writing files, and tracking TODOs.
+
+**Built-in output styles**
+
+Claude Code’s **Default** output style is the existing system prompt, designed to help you complete software engineering tasks efficiently. There are two additional built-in output styles focused on teaching you the codebase and how Claude operates:
+
+- **Explanatory:** Provides educational “Insights” in between helping you complete software engineering tasks. Helps you understand implementation choices and codebase patterns.
+- **Learning:** Collaborative, learn-by-doing mode where Claude will not only share “Insights” while coding, but also ask you to contribute small, strategic pieces of code yourself. Claude Code will add `TODO(human)` markers in your code for you to implement.
+
+**How output styles work**
+
+Output styles directly modify Claude Code’s system prompt.
+
+- Non-default output styles exclude instructions specific to code generation and efficient output normally built into Claude Code (such as responding concisely and verifying code with tests).
+
+- Instead, these output styles have their own custom instructions added to the system prompt.
+
+**Change your output style**
+
+You can either:
+
+- Run `/output-style` to access the menu and select your output style (this can also be accessed from the `/config` menu)
+- Run `/output-style [style]`, such as `/output-style explanatory`, to directly switch to a style
+
+These changes apply to the local project level and are saved in `.claude/settings.local.json`.
+
+**Create a custom output style**
+
+To set up a new output style with Claude’s help, run `/output-style:new I want an output style that ...` By default, output styles created through `/output-style:new` are saved as markdown files at the user level in `~/.claude/output-styles` and can be used across projects. They have the following structure:
+
+```markdown
+---
+name: My Custom Style
+description:
+  A brief description of what this style does, to be displayed to the user
+---
+
+# Custom Style Instructions
+
+You are an interactive CLI tool that helps users with software engineering
+tasks. [Your custom instructions here...]
+
+## Specific Behaviors
+
+[Define how the assistant should behave in this style...]
+```
+
+You can also create your own output style Markdown files and save them either at the user level (`~/.claude/output-styles`) or the project level (`./claude/output-styles`).
+
+You can think of output styles as “stored system prompts” and custom slash commands as “stored prompts”.
+
 ### [Subagents](https://docs.claude.com/en/docs/claude-code/sub-agents)
 
 Subagents are pre-configured AI personalities that Claude Code can delegate tasks to. Subagents are stored as Markdown files with YAML frontmatter in two possible locations:
@@ -309,9 +400,229 @@ For more details, see [quickstart](https://docs.claude.com/en/docs/agents-and-to
 
 ### [Hooks](https://docs.claude.com/en/docs/claude-code/hooks-guide)
 
+**Definition:**
+
+Claude Code hooks are user-defined shell commands that execute at various points in Claude Code’s lifecycle. Hooks provide deterministic control over Claude Code’s behavior, ensuring certain actions always happen rather than relying on the LLM to choose to run them.
+
+**Hook Events:**
+
+Claude Code provides several hook events that run at different points in the workflow:
+
+- **PreToolUse**: Runs before tool calls (can block them)
+- **PostToolUse**: Runs after tool calls complete
+- **UserPromptSubmit**: Runs when the user submits a prompt, before Claude processes it
+- **Notification**: Runs when Claude Code sends notifications
+- **Stop**: Runs when Claude Code finishes responding
+- **SubagentStop**: Runs when subagent tasks complete
+- **PreCompact**: Runs before Claude Code is about to run a compact operation
+- **SessionStart**: Runs when Claude Code starts a new session or resumes an existing session
+- **SessionEnd**: Runs when Claude Code session ends
+
+**Configuration:**
+
+Claude Code hooks are configured in your [settings files](https://docs.claude.com/en/docs/claude-code/settings):
+
+- `~/.claude/settings.json` - User settings
+- `.claude/settings.json` - Project settings
+- `.claude/settings.local.json` - Local project settings (not committed)
+- Enterprise managed policy settings
+
+**Structure:**
+
+Hooks are organized by matchers, where each matcher can have multiple hooks:
+
+```json
+{
+  "hooks": {
+    "EventName": [
+      {
+        "matcher": "ToolPattern",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "your-command-here"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+For events like `UserPromptSubmit`, `Notification`, `Stop`, and `SubagentStop` that don’t use matchers, you can omit the matcher field:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-style.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+For more details, see [hooks reference](https://docs.claude.com/en/docs/claude-code/hooks).
+
 ### [MCP](https://docs.claude.com/en/docs/claude-code/mcp)
 
-### [Output Styles](https://docs.claude.com/en/docs/claude-code/output-styles)
+**Definition:**
+
+Claude Code can connect to hundreds of external tools and data sources through the Model Context Protocol (MCP), an open-source standard for AI-tool integrations. MCP servers give Claude Code access to your tools, databases, and APIs.
+
+**Installing MCP servers:**
+
+Option 1: Add a remote HTTP server
+
+```bash
+# Basic syntax
+claude mcp add --transport http <name> <url>
+
+# Real example: Connect to Notion
+claude mcp add --transport http notion https://mcp.notion.com/mcp
+
+# Example with Bearer token
+claude mcp add --transport http secure-api https://api.example.com/mcp \
+  --header "Authorization: Bearer your-token"
+```
+
+Option 2: Add a remote SSE server:
+
+**Note**: The SSE (Server-Sent Events) transport is deprecated. Use HTTP servers instead, where available.
+
+```bash
+# Basic syntax
+claude mcp add --transport sse <name> <url>
+
+# Real example: Connect to Asana
+claude mcp add --transport sse asana https://mcp.asana.com/sse
+
+# Example with authentication header
+claude mcp add --transport sse private-api https://api.company.com/sse \
+  --header "X-API-Key: your-key-here"
+```
+
+Option 3: Add a local stdio server:
+
+```bash
+# Basic syntax
+claude mcp add --transport stdio <name> <command> [args...]
+
+# Real example: Add Airtable server
+claude mcp add --transport stdio airtable --env AIRTABLE_API_KEY=YOUR_KEY \
+  -- npx -y airtable-mcp-server
+```
+
+**Managing your servers**
+
+```bash
+# List all configured servers
+claude mcp list
+
+# Get details for a specific server
+claude mcp get github
+
+# Remove a server
+claude mcp remove github
+
+# (within Claude Code) Check server status
+/mcp
+```
+
+**Plugin-provided MCP servers**
+
+[Plugins](https://docs.claude.com/en/docs/claude-code/plugins) can bundle MCP servers, automatically providing tools and integrations when the plugin is enabled. Plugin MCP servers work identically to user-configured servers.
+
+How plugin MCP servers work:
+
+- Plugins define MCP servers in `.mcp.json` at the plugin root or inline in `plugin.json`
+- When a plugin is enabled, its MCP servers start automatically
+- Plugin MCP tools appear alongside manually configured MCP tools
+- Plugin servers are managed through plugin installation (not `/mcp` commands)
+
+In `.mcp.json` at plugin root:
+
+```json
+{
+  "database-tools": {
+    "command": "${CLAUDE_PLUGIN_ROOT}/servers/db-server",
+    "args": ["--config", "${CLAUDE_PLUGIN_ROOT}/config.json"],
+    "env": {
+      "DB_URL": "${DB_URL}"
+    }
+  }
+}
+```
+
+Or inline in `plugin.json`:
+
+```json
+{
+  "name": "my-plugin",
+  "mcpServers": {
+    "plugin-api": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/servers/api-server",
+      "args": ["--port", "8080"]
+    }
+  }
+}
+```
+
+**MCP installation scopes**
+
+**Local scope:** Local-scoped servers represent the default configuration level and are stored in your project-specific user settings. These servers remain private to you and are only accessible when working within the current project directory. This scope is ideal for personal development servers, experimental configurations, or servers containing sensitive credentials that shouldn’t be shared.
+
+```bash
+# Add a local-scoped server (default)
+claude mcp add --transport http stripe https://mcp.stripe.com
+
+# Explicitly specify local scope
+claude mcp add --transport http stripe --scope local https://mcp.stripe.com
+```
+
+**Project scope:** Project-scoped servers enable team collaboration by storing configurations in a .mcp.json file at your project’s root directory. This file is designed to be checked into version control, ensuring all team members have access to the same MCP tools and services. When you add a project-scoped server, Claude Code automatically creates or updates this file with the appropriate configuration structure.
+
+```bash
+# Add a project-scoped server
+claude mcp add --transport http paypal --scope project https://mcp.paypal.com/mcp
+```
+
+**User scope:** User-scoped servers provide cross-project accessibility, making them available across all projects on your machine while remaining private to your user account. This scope works well for personal utility servers, development tools, or services you frequently use across different projects.
+
+```bash
+# Add a user server
+claude mcp add --transport http hubspot --scope user https://mcp.hubspot.com/anthropic
+```
+
+Select your scope based on:
+
+- Local scope: Personal servers, experimental configurations, or sensitive credentials specific to one project
+- Project scope: Team-shared servers, project-specific tools, or services required for collaboration
+- User scope: Personal utilities needed across multiple projects, development tools, or frequently-used services
+
+**Example:**
+
+```bash
+# 1. Add the Sentry MCP server
+claude mcp add --transport http sentry https://mcp.sentry.dev/mcp
+
+# 2. Use /mcp to authenticate with your Sentry account
+> /mcp
+
+# 3. Debug production issues
+> "What are the most common errors in the last 24 hours?"
+> "Show me the stack trace for error ID abc123"
+> "Which deployment introduced these new errors?"
+```
+
+For more details, see [MCP](https://docs.claude.com/en/docs/claude-code/mcp).
 
 ### [Plugins](https://docs.claude.com/en/docs/claude-code/plugins)
 
@@ -407,10 +718,6 @@ Additional components you can add:
 - **Skills:** Create SKILL.md files in skills/ directory
 - **Hooks:** Create hooks/hooks.json for event handling
 - **MCP servers:** Create .mcp.json for external tool integration
-
-
-### [Headless mode](https://docs.claude.com/en/docs/claude-code/headless)
-
 
 ## Reference
 
