@@ -1,4 +1,4 @@
-# sdlc
+# coding-assistant
 
 ## Reference
 
